@@ -18,6 +18,8 @@ import sys
 from itertools import product
 from typing import Optional
 
+from tqdm import tqdm
+
 from config import (
     MODELS,
     PROMPT_STYLES,
@@ -194,6 +196,7 @@ def run_model_batch(
     resume: bool = False,
     dry_run: bool = False,
     persona_filter: str | None = None,
+    pbar: tqdm | None = None,
 ):
     """Run all tests for a single model."""
     # Filter personas if specified
@@ -214,13 +217,7 @@ def run_model_batch(
         )
     )
 
-    total = len(combinations)
-    completed = 0
     skipped = 0
-
-    print(f"\n{'='*60}")
-    print(f"Running {total} tests for {model_id}")
-    print(f"{'='*60}\n")
 
     for persona, style, constraint, input_type, chip_count in combinations:
         # Check if result exists (for resume)
@@ -228,19 +225,19 @@ def run_model_batch(
             model_id, persona["id"], style, constraint, input_type, chip_count
         ):
             skipped += 1
+            if pbar:
+                pbar.update(1)
             continue
 
-        completed += 1
-        progress = f"[{completed}/{total - skipped}]"
-
-        # Status line
-        status = f"{progress} {persona['id']} | {style} | {constraint} | {input_type} | {chip_count}"
+        # Update progress bar description
+        desc = f"{model_id.split('/')[-1]} | {persona['id']} | {style[:5]} | {input_type[:5]} | {chip_count}"
+        if pbar:
+            pbar.set_description(desc)
 
         if dry_run:
-            print(f"{status} → [DRY RUN]")
+            if pbar:
+                pbar.update(1)
             continue
-
-        print(f"{status} → ", end="", flush=True)
 
         result = run_test(
             model=model_id,
@@ -258,21 +255,29 @@ def run_model_batch(
         # Save result
         storage.save_result(result)
 
-        # Print result summary
+        # Update progress bar with result info
         counts = result.count_by_type()
-        type_summary = f"S:{counts['situation']} J:{counts['jargon']} R:{counts['role_task']} E:{counts['environment']}"
-
         if result.errors:
-            print(
-                f"⚠ {len(result.final_chips)} chips ({type_summary}) - {len(result.errors)} errors"
-            )
+            if pbar:
+                pbar.set_postfix(
+                    chips=len(result.final_chips), errors=len(result.errors)
+                )
         else:
-            fill_note = f" +{len(result.fill_chips)} fill" if result.fill_chips else ""
-            print(f"✓ {len(result.final_chips)} chips ({type_summary}){fill_note}")
+            fill_str = f"+{len(result.fill_chips)}" if result.fill_chips else ""
+            if pbar:
+                pbar.set_postfix(
+                    chips=len(result.final_chips),
+                    S=counts["situation"],
+                    J=counts["jargon"],
+                    R=counts["role_task"],
+                    E=counts["environment"],
+                    fill=fill_str or None,
+                )
 
-    print(f"\n{'='*60}")
-    print(f"Completed: {completed} | Skipped: {skipped}")
-    print(f"{'='*60}\n")
+        if pbar:
+            pbar.update(1)
+
+    return skipped
 
 
 def main():
@@ -310,6 +315,22 @@ def main():
     # Load personas
     personas = load_personas()
 
+    # Filter personas for count calculation
+    filtered_personas = personas
+    if args.persona:
+        filtered_personas = [p for p in personas if p["id"] == args.persona]
+
+    # Calculate total tests
+    tests_per_persona = (
+        len(PROMPT_STYLES) * len(CONSTRAINTS) * len(INPUT_TYPES) * len(CHIP_COUNTS)
+    )
+    if args.all:
+        total_tests = len(MODELS) * len(filtered_personas) * tests_per_persona
+        models_to_run = MODELS
+    else:
+        total_tests = len(filtered_personas) * tests_per_persona
+        models_to_run = [m for m in MODELS if m.id == args.model]
+
     # Initialize services (skip LLM client for dry run)
     llm_client = None
     generator = None
@@ -325,8 +346,8 @@ def main():
     storage = ResultStorage()
 
     try:
-        if args.all:
-            for model in MODELS:
+        with tqdm(total=total_tests, desc="Starting...", unit="test") as pbar:
+            for model in models_to_run:
                 run_model_batch(
                     model_id=model.id,
                     personas=personas,
@@ -337,26 +358,8 @@ def main():
                     resume=args.resume,
                     dry_run=args.dry_run,
                     persona_filter=args.persona,
+                    pbar=pbar,
                 )
-        else:
-            # Validate model exists
-            valid_ids = [m.id for m in MODELS]
-            if args.model not in valid_ids:
-                print(f"Error: Unknown model '{args.model}'")
-                print(f"Use --list-models to see available models")
-                sys.exit(1)
-
-            run_model_batch(
-                model_id=args.model,
-                personas=personas,
-                storage=storage,
-                generator=generator,
-                selector=selector,
-                fill_service=fill_service,
-                resume=args.resume,
-                dry_run=args.dry_run,
-                persona_filter=args.persona,
-            )
     finally:
         if llm_client:
             llm_client.close()
