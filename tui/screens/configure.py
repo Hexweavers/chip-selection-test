@@ -25,7 +25,7 @@ class ConfigureScreen(Widget):
 
     DEFAULT_CSS = """
     ConfigureScreen {
-        height: 100%;
+        height: auto;
         padding: 1;
     }
     ConfigureScreen .section {

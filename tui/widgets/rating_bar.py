@@ -55,7 +55,7 @@ class RatingBar(Widget, can_focus=True):
         Binding("5", "rate(5)", "Rate 5", show=False),
     ]
 
-    current_model_index: reactive[int] = reactive(0)
+    current_model: reactive[int] = reactive(0)
     show_saved: reactive[bool] = reactive(False)
 
     class RatingChanged(Message):
@@ -75,12 +75,13 @@ class RatingBar(Widget, can_focus=True):
         """Get the short name of the current model."""
         if not self.results:
             return "No models"
-        result = self.results[self.current_model_index]
+        result = self.results[self.current_model]
         model = result.get("model", "Unknown")
         return model.split("/")[-1]
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="rating-container"):
+            yield Static("Rate:", id="rate-label")
             yield Static("\u2190", classes="arrow-hint")
             yield Static(self.get_current_model_short(), id="model-label")
             yield Static("\u2192", classes="arrow-hint")
@@ -88,7 +89,7 @@ class RatingBar(Widget, can_focus=True):
 
         yield Static("Press 1-5 to rate, \u2190/\u2192 to switch models", id="rating-hint")
 
-    def watch_current_model_index(self, value: int) -> None:
+    def watch_current_model(self, value: int) -> None:
         """Update display when model index changes."""
         try:
             label = self.query_one("#model-label", Static)
@@ -111,20 +112,20 @@ class RatingBar(Widget, can_focus=True):
         """Switch to previous model (with wrap-around)."""
         if not self.results:
             return
-        self.current_model_index = (self.current_model_index - 1) % len(self.results)
+        self.current_model = (self.current_model - 1) % len(self.results)
 
     def action_next_model(self) -> None:
         """Switch to next model (with wrap-around)."""
         if not self.results:
             return
-        self.current_model_index = (self.current_model_index + 1) % len(self.results)
+        self.current_model = (self.current_model + 1) % len(self.results)
 
     def action_rate(self, rating: int) -> None:
         """Rate the current model."""
         if not self.results:
             return
 
-        result = self.results[self.current_model_index]
+        result = self.results[self.current_model]
         result_id = result.get("id", "")
 
         if not result_id:
@@ -145,3 +146,9 @@ class RatingBar(Widget, can_focus=True):
         """Clear the saved indicator."""
         self.show_saved = False
         self._saved_timer = None
+
+    def on_unmount(self) -> None:
+        """Clean up timer when widget is destroyed."""
+        if self._saved_timer is not None:
+            self._saved_timer.stop()
+            self._saved_timer = None

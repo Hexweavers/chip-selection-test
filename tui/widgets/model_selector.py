@@ -1,7 +1,7 @@
 """Model selector widget for choosing 1-2 models."""
 
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import Container
 from textual.widgets import Static, Checkbox
 from textual.widget import Widget
 from textual.message import Message
@@ -56,7 +56,7 @@ class ModelSelector(Widget):
 
     def compose(self) -> ComposeResult:
         yield Static("Models (pick 1-2 for head-to-head)", classes="title")
-        with VerticalScroll(classes="model-grid"):
+        with Container(classes="model-grid"):
             for model_id, model_name in self.models:
                 safe_id = model_id.replace("/", "-").replace(".", "-")
                 yield Checkbox(model_name, id=f"model-{safe_id}", name=model_id)

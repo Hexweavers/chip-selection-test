@@ -4,6 +4,7 @@ import json
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
+from textual.css.query import NoMatches
 from textual.screen import Screen
 from textual.widgets import Static, Button, TabbedContent, TabPane, DataTable
 from textual.binding import Binding
@@ -262,7 +263,7 @@ class ComparisonScreen(Screen):
                 # Refresh the rating display
                 rating_static = panel.query_one(".rating-stars", Static)
                 rating_static.update(panel.format_rating_stars())
-            except Exception:
-                pass  # Panel not found, skip
+            except NoMatches:
+                continue  # Panel not found, skip
 
         self.notify(f"Rating saved: {event.rating} stars")

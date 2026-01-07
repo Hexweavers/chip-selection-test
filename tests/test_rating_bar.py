@@ -54,7 +54,7 @@ async def test_rating_bar_shows_current_model():
 
         bar = app.query_one(RatingBar)
         # Should start with first model
-        assert bar.current_model_index == 0
+        assert bar.current_model == 0
         assert "claude-3-5-sonnet" in bar.get_current_model_short()
 
 
@@ -74,7 +74,7 @@ async def test_rating_bar_switches_model_right():
         await pilot.press("right")
         await pilot.pause()
 
-        assert bar.current_model_index == 1
+        assert bar.current_model == 1
 
 
 @pytest.mark.asyncio
@@ -93,12 +93,12 @@ async def test_rating_bar_switches_model_left():
         # Move right first
         await pilot.press("right")
         await pilot.pause()
-        assert bar.current_model_index == 1
+        assert bar.current_model == 1
 
         # Then move left
         await pilot.press("left")
         await pilot.pause()
-        assert bar.current_model_index == 0
+        assert bar.current_model == 0
 
 
 @pytest.mark.asyncio
@@ -118,7 +118,7 @@ async def test_rating_bar_wraps_model_right():
         await pilot.press("right")  # Should wrap to 0
         await pilot.pause()
 
-        assert bar.current_model_index == 0
+        assert bar.current_model == 0
 
 
 @pytest.mark.asyncio
@@ -137,7 +137,7 @@ async def test_rating_bar_wraps_model_left():
         await pilot.press("left")  # Should wrap to 1
         await pilot.pause()
 
-        assert bar.current_model_index == 1
+        assert bar.current_model == 1
 
 
 @pytest.mark.asyncio
