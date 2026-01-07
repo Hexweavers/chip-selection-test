@@ -1,0 +1,58 @@
+{
+  "styles": {
+    "terse": {
+      "description": "Minimal prose, structured, token-efficient",
+      "step1_user_selectable": {
+        "system": "Generate interview training chips. Output valid JSON only.",
+        "user": "Sector: {sector}\nRole: {desired_role}\n\nGenerate 8-10 chips.\n\nChip schema:\n- key: snake_case identifier\n- display: Human-readable name\n- type: one of [situation, jargon, role_task, environment]\n\nTypes:\n- situation: workplace scenarios\n- jargon: industry/role terminology\n- role_task: common responsibilities\n- environment: organizational contexts\n\nOutput: JSON array of chips"
+      },
+      "step1_user_selectable_with_constraint": {
+        "system": "Generate interview training chips. Output valid JSON only.",
+        "user": "Sector: {sector}\nRole: {desired_role}\n\nGenerate 8-10 chips. MUST include at least 2 chips of each type.\n\nChip schema:\n- key: snake_case identifier\n- display: Human-readable name\n- type: one of [situation, jargon, role_task, environment]\n\nTypes:\n- situation: workplace scenarios\n- jargon: industry/role terminology\n- role_task: common responsibilities\n- environment: organizational contexts\n\nOutput: JSON array of chips"
+      },
+      "step2_final_generation": {
+        "system": "Generate interview training chips. Output valid JSON only.",
+        "user": "Sector: {sector}\nRole: {desired_role}\nUser-selected chips: {user_selected_chips}\n\nGenerate {chip_count} additional chips complementing the user's selections.\n\nChip schema:\n- key: snake_case identifier\n- display: Human-readable name\n- type: one of [situation, jargon, role_task, environment]\n\nTypes:\n- situation: workplace scenarios\n- jargon: industry/role terminology\n- role_task: common responsibilities\n- environment: organizational contexts\n\nOutput: JSON array of chips"
+      },
+      "step2_final_generation_basic": {
+        "system": "Generate interview training chips. Output valid JSON only.",
+        "user": "Sector: {sector}\nRole: {desired_role}\n\nGenerate {chip_count} chips.\n\nChip schema:\n- key: snake_case identifier\n- display: Human-readable name\n- type: one of [situation, jargon, role_task, environment]\n\nTypes:\n- situation: workplace scenarios\n- jargon: industry/role terminology\n- role_task: common responsibilities\n- environment: organizational contexts\n\nOutput: JSON array of chips"
+      },
+      "chip_selector": {
+        "system": "You are simulating a user selecting chips during signup. Output valid JSON only.",
+        "user": "Persona: {persona}\n\nAvailable chips:\n{available_chips}\n\nSelect 3-5 chips this person would most likely choose based on their daily work.\n\nOutput: JSON array of selected chip keys"
+      },
+      "fill_missing_types": {
+        "system": "Generate interview training chips. Output valid JSON only.",
+        "user": "Sector: {sector}\nRole: {desired_role}\nExisting chips: {existing_chips}\nMissing types needing 2+ chips: {missing_types}\n\nGenerate 2 chips for each missing type.\n\nChip schema:\n- key: snake_case identifier\n- display: Human-readable name\n- type: one of [situation, jargon, role_task, environment]\n\nOutput: JSON array of chips"
+      }
+    },
+    "guided": {
+      "description": "More explanation, context about what makes good chips",
+      "step1_user_selectable": {
+        "system": "You are helping build a personalized interview training experience. Your task is to generate 'chips' - structured tags that represent situations, terminology, tasks, and contexts relevant to a professional's work life. Good chips are specific enough to be meaningful but broad enough to apply to common interview scenarios.",
+        "user": "A user is signing up for an interview training platform.\n\nTheir sector: {sector}\nTheir desired role: {desired_role}\n\nGenerate 8-10 chips they can select from to personalize their experience.\n\nEach chip needs:\n- key: a snake_case unique identifier (e.g., 'stakeholder_conflict')\n- display: a clean, readable name (e.g., 'Stakeholder Conflict')\n- type: exactly one of these four categories:\n  * 'situation' - workplace scenarios they might face (tight deadlines, ambiguous requirements, team conflicts)\n  * 'jargon' - industry or role-specific terminology they use (OKRs, sprint planning, P&L)\n  * 'role_task' - common responsibilities in their role (roadmap prioritization, customer discovery)\n  * 'environment' - organizational contexts they work in (remote team, startup, enterprise)\n\nAim for variety across types. Make chips specific to this sector/role, not generic professional skills.\n\nRespond with a JSON array of chip objects only."
+      },
+      "step1_user_selectable_with_constraint": {
+        "system": "You are helping build a personalized interview training experience. Your task is to generate 'chips' - structured tags that represent situations, terminology, tasks, and contexts relevant to a professional's work life. Good chips are specific enough to be meaningful but broad enough to apply to common interview scenarios.",
+        "user": "A user is signing up for an interview training platform.\n\nTheir sector: {sector}\nTheir desired role: {desired_role}\n\nGenerate 8-10 chips they can select from to personalize their experience.\n\nEach chip needs:\n- key: a snake_case unique identifier (e.g., 'stakeholder_conflict')\n- display: a clean, readable name (e.g., 'Stakeholder Conflict')\n- type: exactly one of these four categories:\n  * 'situation' - workplace scenarios they might face (tight deadlines, ambiguous requirements, team conflicts)\n  * 'jargon' - industry or role-specific terminology they use (OKRs, sprint planning, P&L)\n  * 'role_task' - common responsibilities in their role (roadmap prioritization, customer discovery)\n  * 'environment' - organizational contexts they work in (remote team, startup, enterprise)\n\nIMPORTANT: You MUST include at least 2 chips of each type to ensure balanced coverage.\n\nMake chips specific to this sector/role, not generic professional skills.\n\nRespond with a JSON array of chip objects only."
+      },
+      "step2_final_generation": {
+        "system": "You are helping build a personalized interview training experience. Your task is to generate 'chips' - structured tags that represent situations, terminology, tasks, and contexts relevant to a professional's work life. The user has already selected some chips that resonate with them - use this signal to generate more relevant chips.",
+        "user": "A user is completing their interview training profile.\n\nTheir sector: {sector}\nTheir desired role: {desired_role}\n\nThey already selected these chips as relevant to their work:\n{user_selected_chips}\n\nGenerate {chip_count} additional chips that complement their selections. Consider:\n- What other scenarios might someone with these selections face?\n- What related terminology would they use?\n- What other tasks and contexts fit this profile?\n\nEach chip needs:\n- key: a snake_case unique identifier\n- display: a clean, readable name\n- type: exactly one of: 'situation', 'jargon', 'role_task', 'environment'\n\nDon't duplicate the chips they already selected. Expand on their profile with new, relevant chips.\n\nRespond with a JSON array of chip objects only."
+      },
+      "step2_final_generation_basic": {
+        "system": "You are helping build a personalized interview training experience. Your task is to generate 'chips' - structured tags that represent situations, terminology, tasks, and contexts relevant to a professional's work life. Good chips are specific enough to be meaningful but broad enough to apply to common interview scenarios.",
+        "user": "A user is setting up their interview training profile.\n\nTheir sector: {sector}\nTheir desired role: {desired_role}\n\nGenerate {chip_count} chips that capture the situations, terminology, tasks, and contexts relevant to this role.\n\nEach chip needs:\n- key: a snake_case unique identifier\n- display: a clean, readable name\n- type: exactly one of:\n  * 'situation' - workplace scenarios (tight deadlines, stakeholder conflicts)\n  * 'jargon' - industry terminology (OKRs, sprint planning)\n  * 'role_task' - common responsibilities (roadmap prioritization)\n  * 'environment' - organizational contexts (remote team, startup)\n\nMake chips specific to this sector/role. Cover a good variety across all four types.\n\nRespond with a JSON array of chip objects only."
+      },
+      "chip_selector": {
+        "system": "You are simulating how a real professional would interact with a signup flow. Based on the persona provided, select chips that would genuinely resonate with this person's daily work experience. Think about what they actually do day-to-day and which chips would feel most relevant to them.",
+        "user": "You are roleplaying as this person:\n\n{persona}\n\nThey're signing up for an interview training platform and see these chips to select from:\n\n{available_chips}\n\nWhich 3-5 chips would this person most likely select? Choose based on:\n- What matches their actual daily work\n- What they'd want to practice for interviews\n- What feels specific to their situation vs. generic\n\nRespond with a JSON array containing only the keys of the selected chips."
+      },
+      "fill_missing_types": {
+        "system": "You are helping ensure a user's interview training profile has balanced coverage across different chip types. Some types are underrepresented and need additional chips.",
+        "user": "A user's profile for interview training needs more coverage.\n\nTheir sector: {sector}\nTheir desired role: {desired_role}\n\nCurrent chips in their profile:\n{existing_chips}\n\nThe following types need at least 2 more chips each: {missing_types}\n\nGenerate exactly 2 chips for each missing type listed. Make them specific to this sector/role and complementary to existing chips.\n\nEach chip needs:\n- key: a snake_case unique identifier\n- display: a clean, readable name\n- type: the type being filled\n\nRespond with a JSON array of chip objects only."
+      }
+    }
+  }
+}

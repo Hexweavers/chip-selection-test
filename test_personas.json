@@ -1,0 +1,40 @@
+{
+  "personas": [
+    {
+      "id": "tech_pm",
+      "sector": "Technology & Software",
+      "desired_role": "Product Manager",
+      "persona": "Marcus works at a Series B SaaS startup with 80 employees. His days revolve around sprint planning with two engineering squads, writing PRDs in Notion, and running weekly roadmap reviews with leadership. He spends significant time in Figma reviews with designers, triaging customer feedback from Intercom, and debating prioritization frameworks with the CEO. He manages the backlog in Linear, tracks OKRs quarterly, and coordinates launches with marketing. His team is hybrid - engineers are mostly remote across US time zones while he goes to the office twice a week in Austin."
+    },
+    {
+      "id": "tech_swe",
+      "sector": "Technology & Software",
+      "desired_role": "Software Engineer",
+      "persona": "Priya is a backend engineer at a mid-size fintech company (200 employees). Her daily work involves writing Python microservices, reviewing PRs on GitHub, and debugging production issues in Datadog. She participates in system design discussions, writes technical specs for new features, and mentors two junior developers. She deals with PCI compliance requirements, works with event-driven architecture using Kafka, and spends time optimizing database queries in PostgreSQL. Her team practices on-call rotations, runs blameless postmortems, and does bi-weekly retrospectives. She works fully remote and communicates heavily through Slack and Loom videos."
+    },
+    {
+      "id": "healthcare_nurse",
+      "sector": "Healthcare & Medical",
+      "desired_role": "Registered Nurse",
+      "persona": "David works as an RN in the ICU at a large urban hospital (500+ beds). His 12-hour shifts involve patient assessments, administering medications via IV pumps, monitoring ventilators, and documenting everything in Epic EMR. He coordinates with attending physicians during rounds, communicates with families about care plans, and handles rapid response situations. He precepts nursing students, participates in quality improvement initiatives, and serves on the unit's shared governance council. He deals with staffing shortages, floating to other units, and mandatory overtime. His unit recently transitioned to a new charting system and implemented bedside shift reports."
+    },
+    {
+      "id": "finance_analyst",
+      "sector": "Finance & Accounting",
+      "desired_role": "Financial Analyst",
+      "persona": "Jennifer works in FP&A at a publicly traded manufacturing company. Her weeks involve building financial models in Excel, preparing variance analyses comparing actuals to budget, and creating board deck slides. She runs the monthly close process with accounting, maintains the rolling 12-month forecast, and supports M&A due diligence when deals arise. She pulls data from SAP, builds dashboards in Power BI, and presents to VPs during quarterly business reviews. She manages relationships with business unit controllers, navigates SOX compliance requirements, and deals with tight reporting deadlines around earnings. She works in-office three days a week at their Chicago headquarters."
+    },
+    {
+      "id": "retail_manager",
+      "sector": "Retail & Merchandising",
+      "desired_role": "Store Manager",
+      "persona": "Carlos manages a big-box home improvement store with 120 employees. His days start with reviewing overnight freight completion, walking the floor to check merchandising standards, and running the morning huddle with department supervisors. He spends time on workforce scheduling in Kronos, handling escalated customer complaints, and coaching associates on selling techniques. He analyzes daily sales reports, manages shrink and loss prevention, and coordinates with district leadership on promotional resets. He deals with seasonal hiring surges, inventory cycle counts, and maintaining safety compliance. He's on his feet most of the day and handles everything from forklift certifications to vendor negotiations for local services."
+    },
+    {
+      "id": "creative_ux",
+      "sector": "Creative & Design",
+      "desired_role": "UX Designer",
+      "persona": "Aisha is a senior UX designer at a B2B enterprise software company. Her work involves conducting user interviews, creating journey maps, and designing complex workflows in Figma. She facilitates design critiques, maintains the design system, and partners closely with product managers on discovery. She runs usability testing sessions via UserTesting.com, synthesizes research findings into actionable insights, and presents design rationale to stakeholders. She navigates accessibility requirements (WCAG compliance), balances user needs against technical constraints with engineering, and deals with enterprise sales teams requesting custom features. She works remotely but travels quarterly for team offsites and occasionally visits key customers for contextual inquiry research."
+    }
+  ]
+}
