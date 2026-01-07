@@ -1,4 +1,4 @@
-"""Tests for App integration with MonitorScreen."""
+"""Tests for App integration with MonitorScreen and ResultsScreen."""
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -7,6 +7,7 @@ from textual.widgets import TabbedContent
 from tui.app import ChipBenchmarkApp
 from tui.screens.monitor import MonitorScreen
 from tui.screens.configure import ConfigureScreen
+from tui.screens.results import ResultsScreen
 
 
 @pytest.mark.asyncio
@@ -110,3 +111,53 @@ async def test_app_handles_view_results_requested():
         # Should have switched to results tab
         tabs = app.query_one(TabbedContent)
         assert tabs.active == "results"
+
+
+# === ResultsScreen Integration Tests ===
+
+
+@pytest.mark.asyncio
+async def test_app_has_results_screen():
+    """App should have ResultsScreen in the results tab."""
+    app = ChipBenchmarkApp()
+    async with app.run_test() as pilot:
+        results_screen = app.query_one(ResultsScreen)
+        assert results_screen is not None
+
+
+@pytest.mark.asyncio
+async def test_app_results_screen_has_repo():
+    """App should pass repo to ResultsScreen."""
+    app = ChipBenchmarkApp()
+    async with app.run_test() as pilot:
+        results_screen = app.query_one(ResultsScreen)
+        assert results_screen.repo is app.repo
+
+
+@pytest.mark.asyncio
+async def test_app_handles_run_selected():
+    """App should handle RunSelected message from ResultsScreen."""
+    app = ChipBenchmarkApp()
+    async with app.run_test() as pilot:
+        # Create a test run so ResultsScreen has something
+        run_id = app.repo.create_run(
+            name="Test Run",
+            persona="architect",
+            prompt_style="terse",
+            flow="basic",
+            constraint_type="none",
+            chip_count=15,
+        )
+
+        # Switch to results tab
+        tabs = app.query_one(TabbedContent)
+        tabs.active = "results"
+        await pilot.pause()
+
+        # Post RunSelected message
+        results_screen = app.query_one(ResultsScreen)
+        results_screen.post_message(ResultsScreen.RunSelected(run_id))
+        await pilot.pause()
+
+        # App should show a notification (comparison view not yet implemented)
+        # This test just verifies the handler exists and doesn't crash

@@ -12,6 +12,7 @@ from db.repository import Repository
 from services.runner_async import AsyncRunner, RunConfig, EventType
 from tui.screens.configure import ConfigureScreen
 from tui.screens.monitor import MonitorScreen
+from tui.screens.results import ResultsScreen
 
 
 class ChipBenchmarkApp(App):
@@ -51,6 +52,15 @@ class ChipBenchmarkApp(App):
         self._current_run_id: str | None = None
         self._run_task: asyncio.Task | None = None
 
+    def on_unmount(self) -> None:
+        """Clean up resources when the app is unmounted."""
+        # Cancel the run task if it's still running
+        if self._run_task is not None and not self._run_task.done():
+            self._run_task.cancel()
+        # Close the database connection
+        if self.db_conn is not None:
+            self.db_conn.close()
+
     def compose(self) -> ComposeResult:
         yield Header()
         with TabbedContent(initial="configure"):
@@ -59,7 +69,7 @@ class ChipBenchmarkApp(App):
             with TabPane("Monitor", id="monitor"):
                 yield MonitorScreen()
             with TabPane("Results", id="results"):
-                yield Static("Results screen placeholder", classes="placeholder")
+                yield ResultsScreen(repo=self.repo)
         yield Footer()
 
     def action_switch_tab(self, tab_id: str) -> None:
@@ -173,9 +183,9 @@ class ChipBenchmarkApp(App):
                     monitor.add_log(event.model, f"[red]Error: {event.message}[/red]")
 
         except asyncio.CancelledError:
-            monitor.add_log("system", "Run cancelled by user")
+            self.notify("Run cancelled by user", severity="warning")
         except Exception as e:
-            monitor.add_log("system", f"[red]Unexpected error: {str(e)}[/red]")
+            self.notify(f"Unexpected error: {str(e)}", severity="error")
         finally:
             monitor.mark_complete()
             self._run_task = None
@@ -193,6 +203,13 @@ class ChipBenchmarkApp(App):
     ) -> None:
         """Handle view results request from monitor screen."""
         self.query_one(TabbedContent).active = "results"
+
+    def on_results_screen_run_selected(
+        self, event: ResultsScreen.RunSelected
+    ) -> None:
+        """Handle run selection from results screen."""
+        # For now, just show a notification - comparison view comes in Task 12
+        self.notify(f"Selected run: {event.run_id[:8]}...")
 
 
 def run():
