@@ -7,8 +7,8 @@ DB_PATH = Path("benchmark.db")
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS runs (
-    id              TEXT PRIMARY KEY,
-    name            TEXT,
+    id              TEXT PRIMARY KEY NOT NULL,
+    name            TEXT NOT NULL,
     created_at      TEXT,
     persona         TEXT,
     prompt_style    TEXT,
@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS runs (
 );
 
 CREATE TABLE IF NOT EXISTS results (
-    id                  TEXT PRIMARY KEY,
-    run_id              TEXT REFERENCES runs(id),
-    model               TEXT,
+    id                  TEXT PRIMARY KEY NOT NULL,
+    run_id              TEXT NOT NULL REFERENCES runs(id),
+    model               TEXT NOT NULL,
     chips               TEXT,
     tokens_in           INTEGER,
     tokens_out          INTEGER,
@@ -44,6 +44,7 @@ def init_db(db_path: Path | None = None) -> sqlite3.Connection:
     """Initialize the database with schema. Returns connection."""
     path = db_path or DB_PATH
     conn = sqlite3.connect(path)
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
     conn.commit()
