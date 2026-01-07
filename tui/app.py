@@ -4,6 +4,8 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, TabbedContent, TabPane, Static
 from textual.binding import Binding
 
+from tui.screens.configure import ConfigureScreen
+
 
 class ChipBenchmarkApp(App):
     """Chip benchmark TUI application."""
@@ -38,7 +40,7 @@ class ChipBenchmarkApp(App):
         yield Header()
         with TabbedContent(initial="configure"):
             with TabPane("Configure", id="configure"):
-                yield Static("Configure screen placeholder", classes="placeholder")
+                yield ConfigureScreen()
             with TabPane("Monitor", id="monitor"):
                 yield Static("Monitor screen placeholder", classes="placeholder")
             with TabPane("Results", id="results"):
@@ -52,6 +54,18 @@ class ChipBenchmarkApp(App):
     def action_help(self) -> None:
         """Show help."""
         self.notify("Press 1/2/3 to switch tabs, q to quit")
+
+    def on_configure_screen_run_requested(
+        self, event: ConfigureScreen.RunRequested
+    ) -> None:
+        """Handle run request from configure screen."""
+        mode = "Dry run" if event.dry_run else "Run"
+        self.notify(
+            f"{mode}: {len(event.models)} model(s), persona={event.persona_id}, "
+            f"style={event.prompt_style}, flow={event.flow}, "
+            f"constraint={event.constraint_type}, chips={event.chip_count}"
+        )
+        self.query_one(TabbedContent).active = "monitor"
 
 
 def run():
