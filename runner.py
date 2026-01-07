@@ -204,13 +204,15 @@ def run_model_batch(
             return
 
     # Generate all test combinations
-    combinations = list(product(
-        personas,
-        PROMPT_STYLES,
-        CONSTRAINTS,
-        INPUT_TYPES,
-        CHIP_COUNTS,
-    ))
+    combinations = list(
+        product(
+            personas,
+            PROMPT_STYLES,
+            CONSTRAINTS,
+            INPUT_TYPES,
+            CHIP_COUNTS,
+        )
+    )
 
     total = len(combinations)
     completed = 0
@@ -261,7 +263,9 @@ def run_model_batch(
         type_summary = f"S:{counts['situation']} J:{counts['jargon']} R:{counts['role_task']} E:{counts['environment']}"
 
         if result.errors:
-            print(f"⚠ {len(result.final_chips)} chips ({type_summary}) - {len(result.errors)} errors")
+            print(
+                f"⚠ {len(result.final_chips)} chips ({type_summary}) - {len(result.errors)} errors"
+            )
         else:
             fill_note = f" +{len(result.fill_chips)} fill" if result.fill_chips else ""
             print(f"✓ {len(result.final_chips)} chips ({type_summary}){fill_note}")
@@ -273,12 +277,22 @@ def run_model_batch(
 
 def main():
     parser = argparse.ArgumentParser(description="Run chip generation tests")
-    parser.add_argument("--model", type=str, help="Model ID to test (e.g., anthropic/claude-haiku-4.5)")
+    parser.add_argument(
+        "--model", type=str, help="Model ID to test (e.g., anthropic/claude-haiku-4.5)"
+    )
     parser.add_argument("--all", action="store_true", help="Run all models")
-    parser.add_argument("--persona", type=str, help="Run only specific persona (e.g., tech_pm)")
+    parser.add_argument(
+        "--persona", type=str, help="Run only specific persona (e.g., tech_pm)"
+    )
     parser.add_argument("--resume", action="store_true", help="Skip existing results")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would run without making API calls")
-    parser.add_argument("--list-models", action="store_true", help="List available models")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would run without making API calls",
+    )
+    parser.add_argument(
+        "--list-models", action="store_true", help="List available models"
+    )
 
     args = parser.parse_args()
 

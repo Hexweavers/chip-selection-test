@@ -16,7 +16,9 @@ class FillService:
         with open(PROMPTS_FILE) as f:
             return json.load(f)["styles"]
 
-    def get_missing_types(self, chips: list[Chip], min_per_type: int = MIN_CHIPS_PER_TYPE) -> list[str]:
+    def get_missing_types(
+        self, chips: list[Chip], min_per_type: int = MIN_CHIPS_PER_TYPE
+    ) -> list[str]:
         """Find chip types that have fewer than min_per_type chips."""
         counts = {t: 0 for t in CHIP_TYPES}
         for chip in chips:
@@ -35,13 +37,18 @@ class FillService:
     ) -> tuple[list[Chip], LLMResponse]:
         """Generate chips to fill missing types."""
         if not missing_types:
-            return [], LLMResponse(content="", input_tokens=0, output_tokens=0, latency_ms=0)
+            return [], LLMResponse(
+                content="", input_tokens=0, output_tokens=0, latency_ms=0
+            )
 
         prompt = self.prompts[style]["fill_missing_types"]
 
         # Format existing chips
         existing_formatted = json.dumps(
-            [{"key": c.key, "display": c.display, "type": c.type} for c in existing_chips],
+            [
+                {"key": c.key, "display": c.display, "type": c.type}
+                for c in existing_chips
+            ],
             indent=2,
         )
 

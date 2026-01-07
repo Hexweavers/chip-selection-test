@@ -28,12 +28,19 @@ class ChipSelector:
 
         # Format available chips for display
         chips_formatted = json.dumps(
-            [{"key": c.key, "display": c.display, "type": c.type} for c in available_chips],
+            [
+                {"key": c.key, "display": c.display, "type": c.type}
+                for c in available_chips
+            ],
             indent=2,
         )
 
         system = prompt["system"]
-        user = prompt["user"].replace("{persona}", persona).replace("{available_chips}", chips_formatted)
+        user = (
+            prompt["user"]
+            .replace("{persona}", persona)
+            .replace("{available_chips}", chips_formatted)
+        )
 
         response = self.llm.chat(self.model, system, user)
 
@@ -51,7 +58,9 @@ class ChipSelector:
             selected_keys = json.loads(cleaned)
 
             if not isinstance(selected_keys, list):
-                response.error = f"Expected array of keys, got {type(selected_keys).__name__}"
+                response.error = (
+                    f"Expected array of keys, got {type(selected_keys).__name__}"
+                )
                 return [], response
 
             # Map keys back to chips

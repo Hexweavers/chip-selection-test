@@ -81,7 +81,9 @@ class ResultStorage:
             "fill_needed": len(result.fill_chips) > 0,
             "fill_count": len(result.fill_chips),
             "step1_chips_json": json.dumps([c.to_dict() for c in result.step1_chips]),
-            "selected_chips_json": json.dumps([c.to_dict() for c in result.user_selected_chips]),
+            "selected_chips_json": json.dumps(
+                [c.to_dict() for c in result.user_selected_chips]
+            ),
             "final_chips_json": json.dumps([c.to_dict() for c in result.final_chips]),
             "errors": "; ".join(result.errors) if result.errors else "",
             "timestamp": m.timestamp,
@@ -96,7 +98,15 @@ class ResultStorage:
                 writer.writeheader()
             writer.writerow(row)
 
-    def result_exists(self, model: str, persona_id: str, style: str, constraint: str, input_type: str, chip_count: int) -> bool:
+    def result_exists(
+        self,
+        model: str,
+        persona_id: str,
+        style: str,
+        constraint: str,
+        input_type: str,
+        chip_count: int,
+    ) -> bool:
         """Check if a result already exists (for resume functionality)."""
         model_dir = self._get_model_dir(model)
         filename = f"{persona_id}_{style}_{constraint}_{input_type}_{chip_count}.json"

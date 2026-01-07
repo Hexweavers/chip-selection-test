@@ -104,7 +104,10 @@ class ChipGenerator:
 
         # Format user-selected chips for the prompt
         selected_formatted = json.dumps(
-            [{"key": c.key, "display": c.display, "type": c.type} for c in user_selected_chips],
+            [
+                {"key": c.key, "display": c.display, "type": c.type}
+                for c in user_selected_chips
+            ],
             indent=2,
         )
 
