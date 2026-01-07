@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Static, ListView, ListItem, Select, Button
 from textual.widget import Widget
 from textual.message import Message
@@ -15,8 +15,8 @@ def format_rating_stars(rating: int | None) -> str:
     """Format a rating as star characters."""
     if rating is None:
         return "--"
-    filled = "*" * rating
-    empty = "-" * (5 - rating)
+    filled = "★" * rating
+    empty = "☆" * (5 - rating)
     return filled + empty
 
 

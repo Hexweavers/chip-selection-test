@@ -13,6 +13,7 @@ from services.runner_async import AsyncRunner, RunConfig, EventType
 from tui.screens.configure import ConfigureScreen
 from tui.screens.monitor import MonitorScreen
 from tui.screens.results import ResultsScreen
+from tui.screens.comparison import ComparisonScreen
 
 
 class ChipBenchmarkApp(App):
@@ -208,8 +209,7 @@ class ChipBenchmarkApp(App):
         self, event: ResultsScreen.RunSelected
     ) -> None:
         """Handle run selection from results screen."""
-        # For now, just show a notification - comparison view comes in Task 12
-        self.notify(f"Selected run: {event.run_id[:8]}...")
+        self.push_screen(ComparisonScreen(event.run_id, self.repo))
 
 
 def run():

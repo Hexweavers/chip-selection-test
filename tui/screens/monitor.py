@@ -2,6 +2,7 @@
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
+from textual.css.query import NoMatches
 from textual.widgets import Static, Button, ProgressBar
 from textual.widget import Widget
 from textual.message import Message
@@ -244,7 +245,7 @@ class MonitorScreen(Widget):
         try:
             log_pane = self.query_one(f"#log-{safe_id}", LogPane)
             log_pane.add_line(message)
-        except Exception:
+        except NoMatches:
             pass  # Model not found, ignore
 
     def update_progress(self, model: str, percent: float, step: str) -> None:
@@ -253,7 +254,7 @@ class MonitorScreen(Widget):
         try:
             progress = self.query_one(f"#progress-{safe_id}", ModelProgress)
             progress.update_progress(percent, step)
-        except Exception:
+        except NoMatches:
             pass  # Model not found, ignore
 
     def update_stats(self, model: str, tokens: int, cost: float) -> None:
@@ -262,7 +263,7 @@ class MonitorScreen(Widget):
         try:
             progress = self.query_one(f"#progress-{safe_id}", ModelProgress)
             progress.update_stats(tokens, cost)
-        except Exception:
+        except NoMatches:
             pass  # Model not found, ignore
 
     def mark_complete(self) -> None:

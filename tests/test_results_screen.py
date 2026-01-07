@@ -167,8 +167,8 @@ async def test_run_list_item_displays_ratings():
 
         item = app.query_one(RunListItem)
         content = item.get_display_text()
-        # Should contain stars (using * as star representation in text)
-        assert "*" in content or "rating" in content.lower()
+        # Should contain stars (using ★ and ☆ Unicode star characters)
+        assert "★" in content or "☆" in content or "rating" in content.lower()
 
 
 @pytest.mark.asyncio

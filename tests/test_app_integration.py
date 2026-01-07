@@ -136,7 +136,9 @@ async def test_app_results_screen_has_repo():
 
 @pytest.mark.asyncio
 async def test_app_handles_run_selected():
-    """App should handle RunSelected message from ResultsScreen."""
+    """App should handle RunSelected message by pushing ComparisonScreen."""
+    from tui.screens.comparison import ComparisonScreen
+
     app = ChipBenchmarkApp()
     async with app.run_test() as pilot:
         # Create a test run so ResultsScreen has something
@@ -147,6 +149,20 @@ async def test_app_handles_run_selected():
             flow="basic",
             constraint_type="none",
             chip_count=15,
+        )
+        # Create a result so the ComparisonScreen has data
+        app.repo.create_result(
+            run_id=run_id,
+            model="test-model",
+            chips=[],
+            tokens_in=100,
+            tokens_out=200,
+            cost_usd=0.01,
+            latency_ms=500,
+            situation_count=1,
+            jargon_count=1,
+            role_task_count=0,
+            environment_count=0,
         )
 
         # Switch to results tab
@@ -159,5 +175,6 @@ async def test_app_handles_run_selected():
         results_screen.post_message(ResultsScreen.RunSelected(run_id))
         await pilot.pause()
 
-        # App should show a notification (comparison view not yet implemented)
-        # This test just verifies the handler exists and doesn't crash
+        # ComparisonScreen should be pushed
+        assert isinstance(app.screen, ComparisonScreen)
+        assert app.screen.run_id == run_id
