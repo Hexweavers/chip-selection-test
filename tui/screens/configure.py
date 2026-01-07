@@ -112,14 +112,14 @@ class ConfigureScreen(Widget):
             with Vertical(classes="option-group"):
                 yield Static("Constraints", classes="option-group-title")
                 with RadioSet(id="constraint"):
-                    yield RadioButton("None", value=True, id="none")
-                    yield RadioButton("2-per-type", id="2-per-type")
+                    yield RadioButton("None", value=True, id="constraint-none")
+                    yield RadioButton("2-per-type", id="constraint-2-per-type")
 
             with Vertical(classes="option-group"):
                 yield Static("Chip Count", classes="option-group-title")
                 with RadioSet(id="chip-count"):
-                    yield RadioButton("15", value=True, id="15")
-                    yield RadioButton("35", id="35")
+                    yield RadioButton("15", value=True, id="count-15")
+                    yield RadioButton("35", id="count-35")
 
         with Horizontal(classes="buttons"):
             yield Button("Run Test", id="run-btn", variant="success")
@@ -166,4 +166,12 @@ class ConfigureScreen(Widget):
         """Get the selected value from a RadioSet."""
         radio_set = self.query_one(f"#{radio_set_id}", RadioSet)
         pressed = radio_set.pressed_button
-        return pressed.id if pressed else ""
+        if not pressed:
+            return ""
+        # Strip prefixes added to make IDs valid (constraint-, count-)
+        btn_id = pressed.id
+        if btn_id.startswith("constraint-"):
+            return btn_id[len("constraint-") :]
+        if btn_id.startswith("count-"):
+            return btn_id[len("count-") :]
+        return btn_id
