@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Header
 from typing import Optional
+from pydantic import BaseModel, Field
 
 from db import Repository, init_db
 
@@ -9,6 +10,10 @@ router = APIRouter()
 def get_repo():
     db = init_db()
     return Repository(db)
+
+
+class RatingCreate(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
 
 
 @router.get("")
@@ -45,3 +50,27 @@ def get_result(result_id: str):
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     return result
+
+
+@router.post("/{result_id}/ratings")
+def create_rating(
+    result_id: str,
+    body: RatingCreate,
+    x_user_id: str = Header(...),
+):
+    """Submit a rating for a result."""
+    repo = get_repo()
+
+    # Check result exists
+    result = repo.get_result(result_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+
+    rating_id = repo.add_rating(result_id, x_user_id, body.rating)
+
+    return {
+        "id": rating_id,
+        "result_id": result_id,
+        "user_id": x_user_id,
+        "rating": body.rating,
+    }
