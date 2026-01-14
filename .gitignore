@@ -15,7 +15,10 @@ env/
 *.swp
 *.swo
 
-# Results (large, generated)
+# Database
+*.db
+
+# Results (legacy)
 results/
 
 # OS
