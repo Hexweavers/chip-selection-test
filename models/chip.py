@@ -67,6 +67,7 @@ class TestResult:
     latency_ms: int = 0
     input_tokens: int = 0
     output_tokens: int = 0
+    cost_usd: float | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -80,6 +81,7 @@ class TestResult:
             "latency_ms": self.latency_ms,
             "input_tokens": self.input_tokens,
             "output_tokens": self.output_tokens,
+            "cost_usd": self.cost_usd,
         }
 
     def to_json(self) -> str:

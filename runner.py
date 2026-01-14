@@ -28,12 +28,13 @@ from config import (
     CHIP_COUNTS,
     PERSONAS_FILE,
     MIN_CHIPS_PER_TYPE,
+    get_model_config,
 )
+from db import Repository, init_db
 from models.chip import Chip, TestResult, TestMetadata
 from services.llm import LLMClient
 from services.generator import ChipGenerator
 from services.selector import ChipSelector
-from utils.storage import ResultStorage
 from utils.fill import FillService
 
 
@@ -183,13 +184,19 @@ def run_test(
     result.input_tokens = total_input_tokens
     result.output_tokens = total_output_tokens
 
+    # Calculate cost
+    model_config = get_model_config(model)
+    if model_config:
+        result.cost_usd = model_config.calculate_cost(total_input_tokens, total_output_tokens)
+
     return result
 
 
 def run_model_batch(
     model_id: str,
     personas: list[dict],
-    storage: ResultStorage,
+    repo: Repository,
+    run_id: str,
     generator: ChipGenerator,
     selector: ChipSelector,
     fill_service: FillService,
@@ -221,8 +228,8 @@ def run_model_batch(
 
     for persona, style, constraint, input_type, chip_count in combinations:
         # Check if result exists (for resume)
-        if resume and storage.result_exists(
-            model_id, persona["id"], style, constraint, input_type, chip_count
+        if resume and repo.result_exists(
+            run_id, model_id, persona["id"], style, input_type, constraint, chip_count
         ):
             skipped += 1
             if pbar:
@@ -253,7 +260,26 @@ def run_model_batch(
         )
 
         # Save result
-        storage.save_result(result)
+        repo.save_result(
+            run_id=run_id,
+            model=result.metadata.model,
+            persona_id=result.metadata.persona_id,
+            sector=result.metadata.sector,
+            desired_role=result.metadata.desired_role,
+            style=result.metadata.style,
+            input_type=result.metadata.input_type,
+            constraint_type=result.metadata.constraint,
+            chip_count=result.metadata.chip_count,
+            final_chips=[c.to_dict() for c in result.final_chips],
+            step1_chips=[c.to_dict() for c in result.step1_chips] if result.step1_chips else None,
+            selected_chips=[c.to_dict() for c in result.user_selected_chips] if result.user_selected_chips else None,
+            fill_chips=[c.to_dict() for c in result.fill_chips] if result.fill_chips else None,
+            errors=result.errors if result.errors else None,
+            latency_ms=result.latency_ms,
+            input_tokens=result.input_tokens,
+            output_tokens=result.output_tokens,
+            cost_usd=result.cost_usd,
+        )
 
         # Update progress bar with result info
         counts = result.count_by_type()
@@ -289,7 +315,7 @@ def main():
     parser.add_argument(
         "--persona", type=str, help="Run only specific persona (e.g., tech_pm)"
     )
-    parser.add_argument("--resume", action="store_true", help="Skip existing results")
+    parser.add_argument("--resume", type=str, help="Resume a previous run by ID")
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -343,7 +369,25 @@ def main():
         selector = ChipSelector(llm_client)
         fill_service = FillService(llm_client)
 
-    storage = ResultStorage()
+    # Initialize database and repository
+    db = init_db()
+    repo = Repository(db)
+
+    # Create or resume run
+    if args.resume:
+        run_id = args.resume
+        existing_run = repo.get_run(run_id)
+        if not existing_run:
+            print(f"Error: Run '{run_id}' not found")
+            sys.exit(1)
+        print(f"Resuming run: {run_id}")
+    else:
+        config = {
+            "models": [m.id for m in models_to_run],
+            "persona": args.persona,
+        }
+        run_id = repo.create_run(config)
+        print(f"Created run: {run_id}")
 
     try:
         with tqdm(total=total_tests, desc="Starting...", unit="test") as pbar:
@@ -351,15 +395,25 @@ def main():
                 run_model_batch(
                     model_id=model.id,
                     personas=personas,
-                    storage=storage,
+                    repo=repo,
+                    run_id=run_id,
                     generator=generator,
                     selector=selector,
                     fill_service=fill_service,
-                    resume=args.resume,
+                    resume=bool(args.resume),
                     dry_run=args.dry_run,
                     persona_filter=args.persona,
                     pbar=pbar,
                 )
+
+        # Mark run as completed
+        repo.complete_run(run_id)
+        print(f"\nCompleted run: {run_id}")
+
+    except KeyboardInterrupt:
+        print(f"\n\nInterrupted. To resume this run, use:")
+        print(f"  python runner.py --resume {run_id} [other options]")
+        sys.exit(1)
     finally:
         if llm_client:
             llm_client.close()
