@@ -280,3 +280,119 @@ class Repository:
             result["my_rating"] = row[22]
 
         return result
+
+    def add_rating(self, result_id: str, user_id: str, rating: int) -> str:
+        """Add or update a rating. Returns rating ID."""
+        rating_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc).isoformat()
+
+        # Upsert rating
+        self.db.execute(
+            """
+            INSERT INTO ratings (id, result_id, user_id, rating, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (result_id, user_id) DO UPDATE SET
+                rating = excluded.rating,
+                created_at = excluded.created_at
+            """,
+            (rating_id, result_id, user_id, rating, now),
+        )
+        self.db.commit()
+        return rating_id
+
+    def get_ratings(
+        self,
+        result_id: str | None = None,
+        user_id: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[dict]:
+        """Get ratings with optional filters."""
+        conditions = []
+        params = []
+
+        if result_id:
+            conditions.append("result_id = ?")
+            params.append(result_id)
+        if user_id:
+            conditions.append("user_id = ?")
+            params.append(user_id)
+
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        params.extend([limit, offset])
+
+        rows = self.db.execute(
+            f"""
+            SELECT id, result_id, user_id, rating, created_at
+            FROM ratings
+            {where_clause}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            """,
+            params,
+        ).fetchall()
+
+        return [
+            {
+                "id": row[0],
+                "result_id": row[1],
+                "user_id": row[2],
+                "rating": row[3],
+                "created_at": row[4],
+            }
+            for row in rows
+        ]
+
+    def get_stats(
+        self,
+        group_by: str = "model",
+        run_id: str | None = None,
+    ) -> list[dict]:
+        """Get aggregated stats grouped by model, persona_id, style, or input_type."""
+        valid_groups = {"model", "persona_id", "style", "input_type"}
+        if group_by not in valid_groups:
+            raise ValueError(f"group_by must be one of {valid_groups}")
+
+        conditions = []
+        params = []
+
+        if run_id:
+            conditions.append("r.run_id = ?")
+            params.append(run_id)
+
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        rows = self.db.execute(
+            f"""
+            SELECT r.{group_by},
+                   COUNT(r.id) as result_count,
+                   COUNT(rat.id) as rated_count,
+                   AVG(rat.rating) as avg_rating,
+                   SUM(r.cost_usd) as total_cost_usd,
+                   AVG(r.latency_ms) as avg_latency_ms,
+                   AVG(r.input_tokens) as avg_input_tokens,
+                   AVG(r.output_tokens) as avg_output_tokens
+            FROM results r
+            LEFT JOIN ratings rat ON rat.result_id = r.id
+            {where_clause}
+            GROUP BY r.{group_by}
+            ORDER BY avg_rating DESC NULLS LAST
+            """,
+            params,
+        ).fetchall()
+
+        return [
+            {
+                group_by: row[0],
+                "result_count": row[1],
+                "rated_count": row[2],
+                "avg_rating": round(row[3], 2) if row[3] else None,
+                "total_cost_usd": round(row[4], 6) if row[4] else 0,
+                "avg_latency_ms": round(row[5]) if row[5] else None,
+                "avg_tokens": {
+                    "input": round(row[6]) if row[6] else None,
+                    "output": round(row[7]) if row[7] else None,
+                },
+            }
+            for row in rows
+        ]
