@@ -217,7 +217,7 @@ class Repository:
         # Get total count
         count_row = self.db.execute(
             f"SELECT COUNT(*) FROM results r {where_clause}",
-            params,
+            tuple(params),
         ).fetchone()
         total = count_row[0] if count_row else 0
 
@@ -240,7 +240,7 @@ class Repository:
             query_params.insert(0, user_id)
         query_params.extend([limit, offset])
 
-        rows = self.db.execute(query, query_params).fetchall()
+        rows = self.db.execute(query, tuple(query_params)).fetchall()
 
         return [self._row_to_result_dict(row, full=False, include_my_rating=bool(user_id)) for row in rows], total
 
@@ -329,7 +329,7 @@ class Repository:
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
             """,
-            params,
+            tuple(params),
         ).fetchall()
 
         return [
@@ -378,7 +378,7 @@ class Repository:
             GROUP BY r.{group_by}
             ORDER BY avg_rating DESC NULLS LAST
             """,
-            params,
+            tuple(params),
         ).fetchall()
 
         return [
