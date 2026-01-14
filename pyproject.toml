@@ -1,15 +1,26 @@
 [project]
 name = "chip-selection-test"
 version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.13"
+description = "Chip generation benchmark"
+requires-python = ">=3.11"
 dependencies = [
-    "httpx>=0.28.1",
-    "python-dotenv>=1.2.1",
-    "tqdm>=4.67.1",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    "tqdm>=4.66",
+    "libsql-experimental>=0.0.47",
+    "fastapi>=0.115",
+    "mangum>=0.19",
+    "pydantic>=2.10",
+    "uvicorn>=0.34",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
     "black>=25.12.0",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
