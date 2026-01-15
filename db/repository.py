@@ -63,8 +63,12 @@ class Repository:
             config=json.loads(row[4]) if row[4] else None,
         )
 
-    def list_runs(self, limit: int = 50, offset: int = 0) -> list[dict]:
-        """List runs with result counts."""
+    def list_runs(self, limit: int = 50, offset: int = 0) -> tuple[list[dict], int]:
+        """List runs with result counts. Returns (runs, total_count)."""
+        # Get total count
+        count_row = self.db.execute("SELECT COUNT(*) FROM runs").fetchone()
+        total = count_row[0] if count_row else 0
+
         rows = self.db.execute(
             """
             SELECT r.id, r.started_at, r.completed_at, r.status,
@@ -78,7 +82,7 @@ class Repository:
             (limit, offset),
         ).fetchall()
 
-        return [
+        runs = [
             {
                 "id": row[0],
                 "started_at": row[1],
@@ -88,6 +92,7 @@ class Repository:
             }
             for row in rows
         ]
+        return runs, total
 
     def save_result(
         self,
@@ -186,6 +191,10 @@ class Repository:
         run_id: str | None = None,
         model: str | None = None,
         persona_id: str | None = None,
+        style: str | None = None,
+        input_type: str | None = None,
+        constraint_type: str | None = None,
+        chip_count: int | None = None,
         rated_by: str | None = None,
         unrated_by: str | None = None,
         limit: int = 50,
@@ -205,6 +214,18 @@ class Repository:
         if persona_id:
             conditions.append("r.persona_id = ?")
             params.append(persona_id)
+        if style:
+            conditions.append("r.style = ?")
+            params.append(style)
+        if input_type:
+            conditions.append("r.input_type = ?")
+            params.append(input_type)
+        if constraint_type:
+            conditions.append("r.constraint_type = ?")
+            params.append(constraint_type)
+        if chip_count is not None:
+            conditions.append("r.chip_count = ?")
+            params.append(chip_count)
         if rated_by:
             conditions.append("EXISTS (SELECT 1 FROM ratings WHERE result_id = r.id AND user_id = ?)")
             params.append(rated_by)
@@ -281,8 +302,8 @@ class Repository:
 
         return result
 
-    def add_rating(self, result_id: str, user_id: str, rating: int) -> str:
-        """Add or update a rating. Returns rating ID."""
+    def add_rating(self, result_id: str, user_id: str, rating: int) -> tuple[str, str]:
+        """Add or update a rating. Returns (rating_id, created_at)."""
         rating_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
 
@@ -298,7 +319,7 @@ class Repository:
             (rating_id, result_id, user_id, rating, now),
         )
         self.db.commit()
-        return rating_id
+        return rating_id, now
 
     def get_ratings(
         self,

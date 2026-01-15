@@ -41,3 +41,7 @@ CREATE TABLE IF NOT EXISTS ratings (
 CREATE INDEX IF NOT EXISTS idx_results_model ON results(model);
 CREATE INDEX IF NOT EXISTS idx_results_run_id ON results(run_id);
 CREATE INDEX IF NOT EXISTS idx_ratings_result_id ON ratings(result_id);
+
+-- Unique constraint for interactive-ui results to prevent race condition duplicates
+CREATE UNIQUE INDEX IF NOT EXISTS idx_results_unique_params
+ON results(run_id, model, persona_id, style, input_type, constraint_type, chip_count);

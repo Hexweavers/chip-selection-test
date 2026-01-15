@@ -21,6 +21,10 @@ def list_results(
     run_id: Optional[str] = Query(None),
     model: Optional[str] = Query(None),
     persona_id: Optional[str] = Query(None),
+    style: Optional[str] = Query(None),
+    input_type: Optional[str] = Query(None),
+    constraint_type: Optional[str] = Query(None),
+    chip_count: Optional[int] = Query(None),
     rated_by: Optional[str] = Query(None),
     unrated_by: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),
@@ -33,6 +37,10 @@ def list_results(
         run_id=run_id,
         model=model,
         persona_id=persona_id,
+        style=style,
+        input_type=input_type,
+        constraint_type=constraint_type,
+        chip_count=chip_count,
         rated_by=rated_by,
         unrated_by=unrated_by,
         limit=limit,
@@ -66,11 +74,12 @@ def create_rating(
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
 
-    rating_id = repo.add_rating(result_id, x_user_id, body.rating)
+    rating_id, created_at = repo.add_rating(result_id, x_user_id, body.rating)
 
     return {
         "id": rating_id,
         "result_id": result_id,
         "user_id": x_user_id,
         "rating": body.rating,
+        "created_at": created_at,
     }

@@ -17,8 +17,8 @@ def list_runs(
 ):
     """List all test runs."""
     repo = get_repo()
-    runs = repo.list_runs(limit=limit, offset=offset)
-    return {"runs": runs}
+    runs, total = repo.list_runs(limit=limit, offset=offset)
+    return {"runs": runs, "total": total}
 
 
 @router.get("/{run_id}")

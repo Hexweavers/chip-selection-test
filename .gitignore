@@ -8,6 +8,7 @@ venv/
 .venv/
 env/
 .env
+.coverage
 
 # IDE
 .idea/
@@ -28,3 +29,7 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# AI stuff
+.claude
+docs/
